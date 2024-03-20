@@ -1,24 +1,17 @@
-# TODO
-# Image scaling, right now 1 letter = 1 pixel, the goal is to change it to e.g 4 pixels
-# Moving the text into image (finding the right size etc) if image scaling will be implemented
-# Coloring the letters if text is moved 
-# Trying to show the art in terminal if that will work
-# Making the function to auto-generate ASCII letters in different styles
-
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 import time
 
 start = time.time()
 def img_to_ascii():
-    img = Image.open("d.jpg")
+    img = Image.open("src/pfp.jpg")
     colorImg = img.copy()
     img = img.convert("LA")
     _x,_y = img.size
     img = img.resize((int(_x-0*_x), int(_y-0*_y)))
     x,y = img.size
 
-    newImg = Image.new(mode="RGBA", size=(x*2,y*2), color=(255,0,0,0))
-    font = ImageFont.truetype("iosevka.ttf",6)
+    newImg = Image.new(mode="RGBA", size=((x*4)-1,(y*4)-1), color=(255,0,0,0))
+    font = ImageFont.truetype("iosevka.ttf",12)
     draw = ImageDraw.Draw(newImg)
 
     with open("symbols.txt", "r") as s:
@@ -34,22 +27,50 @@ def img_to_ascii():
     print(scale_dict)
     vals = list(scale_dict.keys())
 
-    # print(vals)
-    closest = {}
     res = open("res.txt", "w")
-    for i in range(y):
-        for j in range(x):
-            p = img.getpixel((j,i))[0]
-            if p in closest.keys():
-                v = closest[p]
+    pixel_arr = []
+    closest = {}
+    i = 0
+    while i < y:
+        index_x = 0
+        while index_x < x:
+            print(f"+1 index_x:{index_x}, i:{i}, x:{x}, y:{y}")
+            pixel_arr.extend([img.getpixel((index_x, i))[0], img.getpixel((index_x+1,i))[0]])
+            if len(pixel_arr) >= 4:
+                avg = int(sum(pixel_arr) / len(pixel_arr))
+                # print(f" -1 index_x:{index_x}, :{i}, x:{x}")
+                if avg in closest.keys():
+                    v = closest[avg]
+                else:
+                    v = search(avg, vals)
+                    closest[avg] = v
+                res.write(scale_dict[v])
+                index_x += 2
+                i-=1
+                pixel_arr.clear()
             else:
-                v = search(p, vals)
-                # print(f"pixel:{p}. closest:{v}")
-                closest[p] = v
-            res.write(scale_dict[v])
-            draw.text(xy=(j*2,i*2),text=scale_dict[v],font=font)
-        res.write('\n')
-    newImg.save("xd.png")
+                i+=1
+        if index_x >= x:
+            i+=2
+            if i%2 == 0:
+                res.write('\n')
+
+            
+        
+        
+    # # print(vals)
+    # for i in range(y):
+    #     for j in range(x):
+    #         p = img.getpixel((j,i))[0]
+
+    #         else:
+    #             v = search(p, vals)
+    #             # print(f"pixel:{p}. closest:{v}")
+    #             closest[p] = v
+    #         res.write(scale_dict[v])
+    #         draw.text(xy=(j*4,i*4),text=scale_dict[v],font=font, fill="#000000")
+    #     res.write('\n')
+    # newImg.save("xd.png")
 
 
 
@@ -98,3 +119,5 @@ def get_closest(a,b,x):
 img_to_ascii()
 end = time.time()
 print(end-start)
+
+            
