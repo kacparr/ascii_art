@@ -5,7 +5,7 @@
 * Dealing with spaghetti when changing to ascii
 * Moving the text into image (finding the right size etc) if image scaling will be implemented
 * Coloring the letters if text is moved
-* Trying to show the art in terminal if that will work
+* Trying to show the art in neofetch
 * Making the function to auto-generate ASCII letters in different styles
 * Making a website out of this
 * Dockerise it?
