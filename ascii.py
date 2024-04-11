@@ -1,14 +1,19 @@
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 import time
-
+import numpy as np 
+start = time.time()
 def img_to_ascii():
     symbols = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
     symbols_short = "@%#*+=-:. "
     ## opening the image
-    img = Image.open("src/cc.png")
+    img = Image.open("src/sand.png")
     colorImg = img.copy()
-    img = img.convert("LA")
-    # img = img.resize((int(img.size[0]*5), int(img.size[1]*2.5)))
+    img_white = Image.new("RGBA", img.size, "WHITE")
+    img_white.paste(img, (0, 0), img)
+    img = img_white
+    img.save("ahaha.png")
+    img = img.convert("L")
+    img = img.resize((int(img.size[0]), int(img.size[1])))
     x,y = img.size
     newImg = Image.new(mode="RGBA", size=((x*4)-1,(y*4)-1), color=(255,0,0,0))
     font = ImageFont.truetype("iosevka.ttf",8) ## find em 
@@ -24,49 +29,28 @@ def img_to_ascii():
     # print(scale_dict)
     vals = list(scale_dict.keys())
     ## MAIN FUNCTION
+    data = np.asarray(img)
+    print(data)
     res = open("res.txt", "w")
     closest = {}
-    scale_x, scale_y = 1, 1
     index_y = 0
-    
-    total_time = 0
-
     while index_y < y:
         index_x = 0
-        pixels = []
-        colors = []
-        if index_y + (y % scale_y) >= y: 
-            scale_y = y % scale_y
+        line = ""
         while index_x < x: 
-            start = time.time()
-            if index_x + (x % scale_x) >= x: 
-                t = x % scale_x ## t - append number
-            else:
-                t = scale_x
-            pixels.extend([img.getpixel((index_x+j, index_y))[0] for j in range(t)])
+            pxl = data[index_y,index_x]
             # print(colors)
-            if len(pixels) >= t*scale_y: 
                 ## convert
-                avg = sum(pixels) // len(pixels)
-
-                if avg in closest.keys():
-                    v = closest[avg] ##bottleneck?
-                else:
-                    v = search(avg, vals)
-                    closest[avg] = v
-                res.write(scale_dict[v])
-                index_x += scale_x
-                index_y-=(scale_y-1)
-                pixels.clear()
-                colors.clear()
+            if pxl in closest.keys():
+                v = closest[pxl] ##bottleneck?
             else:
-                index_y+=1
-            end = time.time()
-            total_time += (end-start)
+                v = search(pxl, vals)
+                closest[pxl] = v
+            res.write(scale_dict[v])
+            line += scale_dict[v]
+            index_x += 1
         res.write('\n')
-        index_y+=scale_y
-    print(total_time)
-
+        index_y+=1
 
     # # print(vals)
     # for i in range(y):
@@ -124,5 +108,6 @@ def get_closest(a,b,x):
     return b
 
 img_to_ascii()
-
+end = time.time()
+print(end-start)
             
