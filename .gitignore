@@ -1,3 +1,5 @@
 res.txt
 xd.png
 src/
+.vscode/
+__pycache__/
