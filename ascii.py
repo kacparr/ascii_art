@@ -18,17 +18,17 @@ def get_img(src, scale:int=1): # MODE
     else:
         img = img.convert("L")
         img = img.resize((int(img.size[0]/scale), int(img.size[1]/scale)))
-        img_to_ascii(img=img)
+        handle_img_gray(img,"000000","image")
     
-def img_to_ascii(img:Image.Image):
+def img_to_ascii(img:Image.Image, color:str,stype="image"):
     # finding depth by assigning ascii symbols to greyscale
-    font = ImageFont.truetype("fonts/terminus.ttf", 16)
+    font = ImageFont.truetype("fonts/iosevka.ttf", 16)
     symbols = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
     
     # symbols_small = "@%#*+=-:. "
     scale_dict = dict()
     for i in range(len(symbols)):
-        print(f"{symbols[i]} {font.getbbox(symbols[i])}")
+        # print(f"{symbols[i]} {font.getbbox(symbols[i])}")
         if i == len(symbols) - 1:
             scale_dict[255] = symbols[i]
         else:
@@ -36,15 +36,17 @@ def img_to_ascii(img:Image.Image):
             scale_dict[scale] = symbols[i]
     vals = list(scale_dict.keys())
     mean = sum(font.getbbox(symbols[x])[3] for x in range(len(symbols))) // len(symbols)
-    print(mean)
+    # print(mean)
     ## MAIN FUNCTION
     x,y = img.size
-    result = Image.new(mode="RGBA", size=((x),(y*8)), color="WHITE")
+    if stype=="image":
+        result = Image.new(mode="RGBA", size=((x),(y*8)), color="WHITE")
+    else:
+        result = open("res.txt", "w")
 
     draw = ImageDraw.Draw(result)
     
     data = np.asarray(img)
-    res = open("res.txt", "w")
     closest = {}
     index_y = 0
     while index_y < y:
@@ -61,18 +63,21 @@ def img_to_ascii(img:Image.Image):
             line += scale_dict[v]
             # line += v
             index_x += 1
-        res.write(line)
-        if int(font.getlength(line)) > result.width:
+        if stype=="text":
+            result.write(line)
+            result.write('\n')
+        else:
+            if int(font.getlength(line)) > result.width:
             # print(f"{result.width}, {result.height}, {font.getlength(line)}")
-            new = Image.new(mode="RGBA",size=(int(font.getlength(line)), result.height), color=f"#FFFFFF")
-            new.paste(result, (0, 0))
-            result = new.copy()
-            draw = ImageDraw.Draw(result)
-        draw.text(xy=(0, index_y*8), text=line, font=font, fill="#000000", anchor="lt")
+                new = Image.new(mode="RGBA",size=(int(font.getlength(line)), result.height), color=f"#FFFFFF")
+                new.paste(result, (0, 0))
+                result = new.copy()
+                draw = ImageDraw.Draw(result)
+            draw.text(xy=(0, index_y*8), text=line, font=font, fill="#000000", anchor="lt")
 
-        res.write('\n')
         index_y+=1
-    result.save("res.png")
+    return result
+
 
 def search(x, A:list):
     #1. Dzielenie listy na 3 do optymalizacji
@@ -118,7 +123,7 @@ def handle_gif(img:Image.Image, scale): #color or not?
         frame = frame.resize((int(img.size[0]/scale), int(img.size[1]/scale)))
         frames.append(img_to_ascii(frame))
         duration.append(frame.info['duration'])
-        print(len(frames))
+        print(f"{len(frames)/img.n_frames * 100}%")
     frames[0].save("xd2.gif", save_all=True, append_images=frames[1:], duration=duration, loop=img.info['loop'])
    
    
@@ -188,13 +193,16 @@ def img_to_braille(img:Image.Image):
 def handle_img_color(img:Image.Image, scale):
     pass # write res_rgb.png
 
-def handle_img_gray(img:Image.Image, scale):
-    pass # write res.png 
+def handle_img_gray(img:Image.Image, color,stype):
+    if stype=="image":
+        img = img_to_ascii(img,color,stype)
+        img.save("res.png")
+    
 
 def text_to_ascii(mode):
     pass #future   
     
-get_img("src/david.png", 1)
+get_img("./src/pes10.png", 10)
 end = time.time()
 print(end-start)
 
