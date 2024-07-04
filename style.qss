@@ -18,3 +18,16 @@ QPushButton {
 QPushButton:pressed {
     border-color: #a0a0a0;
 }
+QSlider::groove:horizontal { /*slider's bar */
+    border-bottom: 1px solid #ffffff;
+    background: #222;
+    height: 2px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    margin: 2px 0;
+}
+
+QSlider::handle:horizontal { /*slider's thumb */
+    background: url('./assets/slider-thumb.svg');
+    width: 11px;
+    height: 21px;
+    margin: -11px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+}

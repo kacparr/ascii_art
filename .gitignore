@@ -1,7 +1,8 @@
-res.txt
-xd.png
+result.txt
+result.png
 src/
 .vscode/
+env/
 ui-base/
 ascii copy.py
 __pycache__/

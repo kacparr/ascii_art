@@ -18,11 +18,12 @@ def get_img(src, scale:int=1): # MODE
     else:
         img = img.convert("L")
         img = img.resize((int(img.size[0]/scale), int(img.size[1]/scale)))
-        handle_img_gray(img,"000000","image")
+        handle_img_gray(img,"000000","text")
     
 def img_to_ascii(img:Image.Image, color:str,stype="image"):
     # finding depth by assigning ascii symbols to greyscale
     font = ImageFont.truetype("fonts/iosevka.ttf", 16)
+    print(type(font))
     symbols = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. "
     
     # symbols_small = "@%#*+=-:. "
@@ -76,7 +77,7 @@ def img_to_ascii(img:Image.Image, color:str,stype="image"):
             draw.text(xy=(0, index_y*8), text=line, font=font, fill="#000000", anchor="lt")
 
         index_y+=1
-    return result
+        
 
 
 def search(x, A:list):
@@ -124,7 +125,7 @@ def handle_gif(img:Image.Image, scale): #color or not?
         frames.append(img_to_ascii(frame))
         duration.append(frame.info['duration'])
         print(f"{len(frames)/img.n_frames * 100}%")
-    frames[0].save("xd2.gif", save_all=True, append_images=frames[1:], duration=duration, loop=img.info['loop'])
+    frames[0].save("result.gif", save_all=True, append_images=frames[1:], duration=duration, loop=img.info['loop'])
    
    
 def dithering(img: Image.Image, patternName:str):
@@ -202,7 +203,6 @@ def handle_img_gray(img:Image.Image, color,stype):
 def text_to_ascii(mode):
     pass #future   
     
-get_img("./src/pes10.png", 10)
+get_img("src/cc.png", 2)
 end = time.time()
 print(end-start)
-

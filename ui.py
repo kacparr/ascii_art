@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 from PySide6 import QtCore, QtGui
 from PySide6.QtWidgets import *
-
+import ascii_oop
 
 class WindowBar(QWidget):
     def __init__(self, parent) :
@@ -85,10 +85,10 @@ class App(QWidget):
         
         
         self.hello = ["Siemaneczko", "eluwina"]
-        with open("pa2.hex","r") as f:
+        with open("./assets/palette_w95.hex","r") as f:
             self.palette = [x.strip() for x in f.readlines()]
         self.letter_table = [x for x in string.printable]
-        self.letters = [self.create_letter(random.choice(self.letter_table)) for _ in range(150)]
+        self.letters = [self.create_letter(random.choice(self.letter_table)) for _ in range(50)]
         
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.animation)
@@ -101,17 +101,19 @@ class App(QWidget):
         self.windowbar = WindowBar(self)
         window_layout.addWidget(self.windowbar)
         
-        self.main_widget = QStackedWidget()
+        self.main_widget = QStackedWidget() #
         window_layout.addWidget(self.main_widget)
         
-        self.start_widget = QWidget()
+        self.start_widget = QWidget() #selecting text or image
         self.init_start_widget()
 
         
-        self.image_widget = QWidget()
+        self.image_widget = QWidget() # select image or animated
         self.init_image_widget()
         
-        self.select_image_widget = QWidget()
+        self.select_image_widget = QWidget() # color, scale and file dialog (and maybe extension?)
+        self.init_select_image_widget()
+        
         
         self.main_widget.addWidget(self.start_widget)
         self.main_widget.addWidget(self.image_widget)
@@ -132,7 +134,8 @@ class App(QWidget):
         self.button_text.setFixedSize(350,50)
         self.button_image = QPushButton("Image")
         self.button_image.setFixedSize(350,50)
-        self.button_image.clicked.connect(self.show_image_widget)
+        self.button_image.clicked.connect(lambda:self.show_image_widget("image"))
+        self.button_text.clicked.connect(self.show_select_image_widget_text)
         button_layout.addWidget(self.button_text)
         button_layout.addWidget(self.button_image)
         
@@ -150,7 +153,7 @@ class App(QWidget):
         images_layout = QHBoxLayout()
         images_layout.setAlignment(QtCore.Qt.AlignCenter)
         self.image1 = QLabel()
-        self.image1.setPixmap(QtGui.QPixmap("./assets/img/res.png").scaled(350,450))
+        self.image1.setPixmap(QtGui.QPixmap("./assets/img/david.png").scaled(350,450))
         
         self.image2 = QLabel()
         self.movie = QtGui.QMovie("./assets/img/pes_animated.gif")
@@ -163,8 +166,10 @@ class App(QWidget):
         button_layout = QHBoxLayout()
         button_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.button_standard = QPushButton("Standard")
+        self.button_standard.clicked.connect(lambda: self.show_select_image_widget("standard"))
         self.button_standard.setFixedSize(350,50)
         self.button_animated = QPushButton("Animated")
+        self.button_animated.clicked.connect(lambda: self.show_select_image_widget("animated"))
         self.button_animated.setFixedSize(350,50)
         button_layout.addWidget(self.button_standard)
         button_layout.addWidget(self.button_animated)
@@ -175,39 +180,65 @@ class App(QWidget):
     
     def init_select_image_widget(self):
         layout = QVBoxLayout()
-        self.image_widget.setLayout(layout)
-        self.text = QLabel("Select the type of image.")
-        self.text.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
+        self.select_image_widget.setLayout(layout)
+        self.text = QLabel("Choose the options and select the image.")
         self.text.setStyleSheet("font-size: 20px")
+        slider_layout = QHBoxLayout()
+        self.slider_text = QLabel("Select scale: ")
+        self.slider = QSlider()
+        self.slider.setOrientation(QtCore.Qt.Horizontal)
+        self.slider.setMinimum(1)
+        self.slider.setMaximum(15)
+        self.slider.setSingleStep(1)
+        self.slider_value = 1
+        self.slider_value_text = QLabel("")
+        slider_layout.addWidget(self.slider_text)
+        slider_layout.addWidget(self.slider)       
+        slider_layout.addWidget(self.slider_value_text) 
+        self.slider.valueChanged.connect(self.get_slider_value)
+        self.slider_note = QLabel("Note: the bigger your image is, the bigger your scale value should be. Load an image for reccomended scale value.")
+        self.slider_note.setStyleSheet("font-size: 12px;")
+        loadfile_layout = QHBoxLayout()
+        self.button_file = QPushButton("Load file")
+        self.filename_text = QLabel("No file selected.")
+        self.filename_text.setMaximumWidth(250)
+        loadfile_layout.addWidget(self.button_file)
+        loadfile_layout.addWidget(self.filename_text)
+        self.button_file.clicked.connect(self.load_file)
+        self.button_create = QPushButton("Asciify!")
+        self.end_text = QLabel("")
+        self.button_create.clicked.connect(self.create_ascii)
+        layout.addLayout(slider_layout)
+        layout.addLayout(loadfile_layout)
+        layout.addWidget(self.button_create)
+        layout.addWidget(self.end_text)
 
-
-        images_layout = QHBoxLayout()
-        images_layout.setAlignment(QtCore.Qt.AlignCenter)
-        self.image1 = QLabel()
-        self.image1.setPixmap(QtGui.QPixmap("./assets/img/res.png").scaled(350,450))
         
-        self.image2 = QLabel()
-        self.movie = QtGui.QMovie("./assets/img/pes_animated.gif")
-        self.movie.setScaledSize(QtCore.QSize(350,450))
-        self.image2.setMovie(self.movie)
-        self.movie.start()
-        images_layout.addWidget(self.image1)
-        images_layout.addWidget(self.image2)
-        
-        button_layout = QHBoxLayout()
-        button_layout.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.button_standard = QPushButton("Standard")
-        self.button_standard.setFixedSize(350,50)
-        self.button_animated = QPushButton("Animated")
-        self.button_animated.setFixedSize(350,50)
-        button_layout.addWidget(self.button_standard)
-        button_layout.addWidget(self.button_animated)
-        
-        layout.addWidget(self.text)
-        layout.addLayout(images_layout)
-        layout.addLayout(button_layout)
-    def show_image_widget(self):
+    
+    def show_image_widget(self, return_type):
+        self.return_type = return_type
         self.main_widget.setCurrentWidget(self.image_widget)
+    
+    def show_select_image_widget(self, image_type):
+        self.image_type = image_type
+        self.main_widget.setCurrentWidget(self.select_image_widget)
+    
+    def show_select_image_widget_text(self):
+        self.image_type = "standard"
+        self.return_type = "text"
+        self.main_widget.setCurrentWidget(self.select_image_widget)
+    
+    def get_slider_value(self, value):
+        self.slider_value = value
+        self.slider_value_text.setText(str(value))
+    
+    def load_file(self):
+        if self.image_type == "animated":
+            self.file = QFileDialog.getOpenFileName(self,"Open your GIF file","","GIF Files (*.gif)",options=QFileDialog.Option.ReadOnly)
+        elif self.image_type == "standard":
+            self.file = QFileDialog.getOpenFileName(self,"Open your image file","","Image Files (*.png *.jpg *.webp *.jpeg)",options=QFileDialog.Option.ReadOnly)
+        self.filename = self.file[0]
+        self.filename_text.setText(self.filename.split("/")[-1])
         
     def create_letter(self, char):
         letter = QLabel(char, self)
@@ -228,6 +259,13 @@ class App(QWidget):
                 letter.move(x,y)
             else:
                 letter.move(x,letter.y())
+    
+    def create_ascii(self):
+        self.end_text.setText("Loading...")
+        self.converter = ascii_oop.ImageHandler(scale=self.slider_value,font_path="./fonts/hack.ttf",stype=self.return_type,color="000000")
+        self.img = self.converter.get_img(self.filename)
+        self.end_text.setText("Result saved! Check your folder!")
+                
 
     
     def magic(self):
